@@ -13,26 +13,48 @@ because we use this endpoint for importing existing data.
 ### Prerequisites:
 1. Install CLARIN-DSpace7.*. (postgres, solr, dspace backend)
 
-2.1. Clone python-api: https://github.com/ufal/dspace-python-api (branch `main`) and https://github.com/ufal/DSpace (branch `clarin-v7`)
-2.2. Clone submodules:
-2.2.1.: `git submodule update --init libs/dspace-rest-python/`
+2. get sources
 
-2. Get database dump (old CLARIN-DSpace) and unzip it into `input/dump` directory in `dspace-python-api` project.
+    2.1. Clone python-api: https://github.com/ufal/dspace-python-api (branch `main`)
+
+    2.2. Clone submodules:
+`git submodule update --init libs/dspace-rest-python/`
+
+3. Get database dump (old CLARIN-DSpace) and unzip it into `input/dump` directory in `dspace-python-api` project.
+
+4. Create CLARIN-DSpace5.* databases (dspace, utilities) from dump.
+Run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database.
 
 ***
-3. Go to the `dspace/bin` in dspace7 installation and run the command `dspace database migrate force` (force because of local types).
+5. Go to the `dspace/bin` in dspace7 installation and run the command `dspace database migrate force` (force because of local types).
 **NOTE:** `dspace database migrate force` creates default database data that may be not in database dump, so after migration, some tables may have more data than the database dump. Data from database dump that already exists in database is not migrated.
 
-4. Create an admin by running the command `dspace create-administrator` in the `dspace/bin`
+6. Create an admin by running the command `dspace create-administrator` in the `dspace/bin`
 
 ***
-5. Prepare `dspace-python-api` project for migration
+7. Create JSON files from the database tables. 
+**NOTE: You must do it for both databases `clarin-dspace` and `clarin-utilities`** (JSON files are stored in the `data` folder)
+- Go to `dspace-python-api` and run
+```
+pip install -r requirements.txt
+(optional on ubuntu like systems) apt install libpq-dev
+python tools/db_to_json.py --database=clarin-dspace [--port] [--host] [--user] [--password]
+python tools/db_to_json.py --database=clarin-utilities  [--port] [--host] [--user] [--password]
+```
+If you omit `--user` the value from `project_settings.py` will be used.
+
+***
+8. Prepare `dspace-python-api` project for migration
 
 - copy the files used during migration into `input/` directory:
 ```
 > ls -R ./input
 input:
-dump  icon
+data icon
+
+input/data:
+bitstream.json                   fileextension.json                    piwik_report.json
+bitstreamformatregistry.json     ...
 
 input/dump:
 clarin-dspace.sql  clarin-utilities.sql
@@ -40,9 +62,6 @@ clarin-dspace.sql  clarin-utilities.sql
 input/icon:
 aca.png  by.png  gplv2.png  mit.png    ...
 ```
-6. 
-7. Create CLARIN-DSpace5.* databases (dspace, utilities) from dump.
-Run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database.
 
 ***
 9. update `project_settings.py`
@@ -54,7 +73,7 @@ e.g.,`handle.additional.prefixes = 11858, 11234, 11372, 11346, 20.500.12801, 20.
 11. Copy `assetstore` from dspace5 to dspace7 (for bitstream import). `assetstore` is in the folder where you have installed DSpace `dspace/assetstore`.
 
 ***
-11. Import
+11. Import data from the json files (python-api/input/*) into dspace database (CLARIN-DSpace7.*)
 - **NOTE:** database must be up to date (`dspace database migrate force` must be called in the `dspace/bin`)
 - **NOTE:** dspace server must be running
 - run command `cd ./src && python repo_import.py`
