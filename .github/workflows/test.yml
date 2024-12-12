@@ -16,10 +16,17 @@ jobs:
         with:
           submodules: recursive      
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
       - name: install requirements
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r libs/dspace-rest-python/requirements.txt
+          pip install -r requirements.txt
 
-      - name: smoketest
+      - name: run smoketests
         run: |
           cd ./src
           python repo_import.py --help

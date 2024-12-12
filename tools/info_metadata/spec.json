@@ -1,0 +1,18 @@
+{
+  "must_exist": [
+    "dc.identifier.uri"
+  ],
+
+  "unique": [
+    "dc.title"
+  ],
+
+  "date": [
+    "dc.date.issued"
+  ],
+  "counts_gt_1": [
+    "dc.identifier",
+    "local.identifier.stag",
+    ["dc.title", "dc.contributor.author"]
+  ]
+}

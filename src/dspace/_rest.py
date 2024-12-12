@@ -243,6 +243,25 @@ class rest:
 
     # =======
 
+    def fetch_licenses(self):
+        url = 'core/clarinlicenses'
+        _logger.debug(f"Fetch [] using [{url}]")
+        page = 0
+        licenses = []
+        while True:
+            r = self._fetch(url, self.get, "_embedded",
+                            params={"page": page, "size": 100})
+            if r is None:
+                break
+            key = "clarinlicenses"
+            licenses_data = r.get(key, [])
+            if licenses_data:
+                licenses.extend(licenses_data)
+            else:
+                _logger.warning(f"Key [{key}] does not exist in response: {r}")
+            page += 1
+        return licenses
+
     def put_license_label(self, data: dict):
         url = 'core/clarinlicenselabels'
         _logger.debug(f"Importing [{data}] using [{url}]")
@@ -333,6 +352,65 @@ class rest:
         _logger.debug(f"Importing [] using [{url}]")
         return self._fetch(url, self.get, None)
 
+    def fetch_items(self, page_size: int = 100, limit=None):
+        url = 'core/items'
+        _logger.debug(f"Fetch [] using [{url}]")
+        page = 0
+        items = []
+        while True:
+            r = self._fetch(url, self.get, "_embedded",
+                            params={"page": page, "size": page_size})
+            if r is None:
+                break
+            key = "items"
+            items_data = r.get(key, [])
+            if items_data:
+                items.extend(items_data)
+            else:
+                _logger.warning(f"Key [{key}] does not exist in response: {r}")
+            page += 1
+
+            if limit is not None and len(items) > limit:
+                return items[:limit]
+        return items
+
+    def iter_items(self, page_size: int = 100, limit: int = -1, uuid: str = None):
+        from tqdm import tqdm
+
+        url = 'core/items'
+        _logger.debug(f"Fetch iter [] using [{url}]")
+        page = 0
+        len_items = 0
+        item_key = "items"
+        fetch_key = "_embedded"
+
+        if uuid is not None:
+            fetch_key = None
+            url = f"{url}/{uuid}"
+
+        with tqdm(desc="Fetching items", unit=" items") as pbar:
+            while True:
+                r = self._fetch(url, self.get, fetch_key,
+                                params={"page": page, "size": page_size})
+                if r is None:
+                    break
+                # only one
+                if uuid is not None:
+                    yield [r]
+                    return
+
+                items_data = r.get(item_key, [])
+                if items_data:
+                    len_items += len(items_data)
+                    yield items_data
+                else:
+                    _logger.warning(f"Key [{item_key}] does not exist in response: {r}")
+                page += 1
+                pbar.update(len(items_data))
+
+                if len_items >= limit > 0:
+                    return
+
     def put_ws_item(self, param: dict, data: dict):
         url = 'clarin/import/workspaceitem'
         _logger.debug(f"Importing [{data}] using [{url}]")
@@ -375,15 +453,34 @@ class rest:
 
     # =======
 
-    def _fetch(self, url: str, method, key: str, **kwargs):
+    def _fetch(self, url: str, method, key: str, re_auth=True, **kwargs):
+        r = None
         try:
             r = method(url, **kwargs)
             js = response_to_json(r)
-            if key is None:
-                return js
-            return js[key]
+
+            if r.status_code == 200:
+                # 200 OK - success!
+                if key is None:
+                    return js
+                return js[key]
+
+            if re_auth and r.status_code == 401:
+                # 401 Unauthorized
+                logging.debug('Re-authenticating in _fetch')
+                if self.client.authenticate():
+                    return self._fetch(url, method, key, re_auth=False, **kwargs)
+
+            _logger.error(f'GET [{url}] failed. Status: {r.status_code}]')
+            return None
         except Exception as e:
-            _logger.error(f'GET [{url}] failed. Exception: [{str(e)}]')
+            detail = ""
+            if r is not None:
+                try:
+                    detail = r.content.decode('utf-8')
+                except Exception:
+                    pass
+            _logger.error(f'GET [{url}] failed. Exception: [{str(e)}] [{detail}]')
         return None
 
     def _put(self, url: str, arr: list, params: list = None):

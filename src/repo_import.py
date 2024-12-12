@@ -80,12 +80,6 @@ if __name__ == "__main__":
     for k, v in env["cache"].items():
         env["cache"][k] = os.path.join(env["resume_dir"], v)
 
-    # input data directory
-    input_dir = env["input"]["datadir"]
-    if not os.path.exists(input_dir):
-        _logger.critical(f"Input directory [{input_dir}] does not exist - cannot import.")
-        sys.exit(1)
-
     dspace_be = dspace.rest(
         env["backend"]["endpoint"],
         env["backend"]["user"],
@@ -284,15 +278,14 @@ if __name__ == "__main__":
     repo.diff(repo.usermetadatas)
     _logger.info(import_sep)
 
-    # before importing of resource policies we have to delete all
-    # created data
-    repo.raw_db_7.delete_resource_policy()
-
-    # import bitstreams
+    # import resourcepolicy
     cache_file = env["cache"]["resourcepolicy"]
     if deserialize(args.resume, repo.resourcepolicies, cache_file):
         _logger.info(f"Resuming resourcepolicies [{repo.resourcepolicies.imported}]")
     else:
+        # before importing of resource policies we have to delete all
+        # created data
+        repo.raw_db_7.delete_resource_policy()
         repo.resourcepolicies.import_to(env, dspace_be, repo)
         repo.resourcepolicies.serialize(cache_file)
     repo.diff(repo.resourcepolicies)
