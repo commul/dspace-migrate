@@ -55,6 +55,9 @@ if __name__ == "__main__":
     parser.add_argument('--assetstore',
                         help='Location of assetstore folder',
                         required=False, type=str, default="")
+    parser.add_argument('--tempdb',
+                        help='Tempdbesport exists',
+                        required=False, action="store_true", default=False)
 
     args = parser.parse_args()
     s = time.time()
@@ -87,6 +90,7 @@ if __name__ == "__main__":
         env["backend"]["authentication"]
     )
 
+    env["tempdb"] = args.tempdb
     _logger.info("Loading repo objects")
     repo = pump.repo(env, dspace_be)
 
@@ -233,6 +237,7 @@ if __name__ == "__main__":
         repo.items.raw_after_import(
             env, repo.raw_db_7, repo.raw_db_dspace_5, repo.metadatas)
     repo.diff(repo.items)
+    repo.test(repo.items)
     _logger.info(import_sep)
 
     # import tasklists
@@ -266,6 +271,7 @@ if __name__ == "__main__":
             env, cache_file, dspace_be, repo.metadatas, repo.bitstreamformatregistry, repo.bundles, repo.communities, repo.collections)
         repo.bitstreams.serialize(cache_file)
     repo.diff(repo.bitstreams)
+    repo.test(repo.bitstreams)
     _logger.info(import_sep)
 
     # import usermetadata
@@ -289,6 +295,7 @@ if __name__ == "__main__":
         repo.resourcepolicies.import_to(env, dspace_be, repo)
         repo.resourcepolicies.serialize(cache_file)
     repo.diff(repo.resourcepolicies)
+    repo.test(repo.resourcepolicies)
     _logger.info(import_sep)
 
     # migrate sequences
@@ -309,3 +316,6 @@ if __name__ == "__main__":
 
     _logger.info("Database difference")
     repo.diff()
+
+    _logger.info("Database test")
+    repo.test()

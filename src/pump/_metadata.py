@@ -39,7 +39,7 @@ def _metadatavalue_process(repo, v5data: list, v7data: list):
             continue
 
         # ignore file preview in metadata
-        if field_id in metadatas.IGNORE_FIELDS:
+        if field_id in metadatas.IGNORE_FIELDS or field_id in metadatas.REPLACE_FIELDS:
             continue
 
         uuid = repo.uuid(res_type_id, res_id)
@@ -123,12 +123,22 @@ class metadatas:
     """
 
     # clarin-dspace=# select * from metadatafieldregistry  where metadata_field_id=176 ;
-    #  metadata_field_id | metadata_schema_id |  element  | qualifier |               scope_note
-    # -------------------+--------------------+-----------+-----------+----------------------------------------
-    #                176 |                  3 | bitstream | file      | Files inside a bitstream if an archive
+    #  metadata_field_id | metadata_schema_id |   element   |   qualifier   |               scope_note
+    # -------------------+--------------------+-------------+---------------+----------------------------------------
+    #                176 |                  3 |  bitstream  |     file      | Files inside a bitstream if an archive
+    # clarin-dspace=# select * from metadatafieldregistry  where metadata_field_id=178 ;
+    # -------------------+--------------------+-------------+---------------+----------------------------------------
+    #                178 |                  3 |  bitstream  | redirectToURL |    Get the bitstream from this URL.
     IGNORE_FIELDS = [
-        176
+        176, 178
     ]
+
+    # fields which will be replaced in metadata
+    # if we want to ignore the metadata field, we must replace field when metadata is imported!
+    #  metadata_field_id | metadata_schema_id |   element   |   qualifier   |               scope_note
+    # -------------------+--------------------+-------------+---------------+----------------------------------------
+    #                98  |                  3 | hasMetadata |     null      |       Indicates uploaded cmdi file
+    REPLACE_FIELDS = [98]
 
     validate_table = [
         ["metadataschemaregistry", {
@@ -145,6 +155,15 @@ class metadatas:
                 "process": _metadatavalue_process,
             }
         }],
+    ]
+
+    test_table = [
+        {
+            "name": "ignored_hasMetadata",
+            "left": ["sql", "db7", "one", "select count(*) from metadatafieldregistry "
+                                          "where element = 'hasMetadata'"],
+            "right": ["val", 0]
+        }
     ]
 
     def __init__(self, env, dspace, value_file_str: str, field_file_str: str, schema_file_str: str):
@@ -171,6 +190,7 @@ class metadatas:
             "schema_existed": 0,
             "field_imported": 0,
             "field_existed": 0,
+            "replaced_field": 0,
         }
 
         # Find out which field is `local.sponsor`, check only `sponsor` string
@@ -466,6 +486,9 @@ class metadatas:
                 existing_arr.append(field)
                 ext_field_id = existing['id']
                 self._imported["field_existed"] += 1
+            elif field_id in metadatas.REPLACE_FIELDS:
+                self._imported["replaced_field"] += 1
+                continue
             else:
                 data = {
                     'element': field['element'],
@@ -569,7 +592,8 @@ class metadatas:
 
         vals = tp_values[res_id]
 
-        vals = [x for x in vals if self.exists_field(x['metadata_field_id'])]
+        vals = [x for x in vals if (self.exists_field(x['metadata_field_id']) or
+                                    x['metadata_field_id'] in metadatas.REPLACE_FIELDS)]
         if len(vals) == 0:
             return {}
 
