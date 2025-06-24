@@ -11,7 +11,7 @@ there exists automatic function that sends email, what we don't want
 because we use this endpoint for importing existing data.
 
 ### Prerequisites:
-1. Install CLARIN-DSpace7.*. (postgres, solr, dspace backend) - you can use `docker compose`
+1. Install CLARIN-DSpace7.*. (postgres, solr, dspace backend) - you can use `docker compose`. At this point keep your `local.cfg` minimal, you'll modify it when the migration is done.
 
 2. clone these sources
 
