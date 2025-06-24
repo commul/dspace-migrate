@@ -45,6 +45,7 @@ input/icon:
 aca.png  by.png  gplv2.png  mit.png    ...
 ```
 - Create CLARIN-DSpace5.* databases (dspace, utilities) from dump.
+  
 Either:
 - run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database. 
 - do the import manually
