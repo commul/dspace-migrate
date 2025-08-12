@@ -56,7 +56,7 @@ if __name__ == "__main__":
                         help='Location of assetstore folder',
                         required=False, type=str, default="")
     parser.add_argument('--tempdb',
-                        help='Tempdbesport exists',
+                        help='Tempdb export exists',
                         required=False, action="store_true", default=False)
 
     args = parser.parse_args()
@@ -238,16 +238,6 @@ if __name__ == "__main__":
             env, repo.raw_db_7, repo.raw_db_dspace_5, repo.metadatas)
     repo.diff(repo.items)
     repo.test(repo.items)
-    _logger.info(import_sep)
-
-    # import tasklists
-    cache_file = env["cache"]["tasklistitem"]
-    if deserialize(args.resume, repo.tasklistitems, cache_file):
-        _logger.info(f"Resuming tasklistitems [{repo.tasklistitems.imported}]")
-    else:
-        repo.tasklistitems.import_to(dspace_be, repo.epersons, repo.items)
-        repo.tasklistitems.serialize(cache_file)
-    repo.diff(repo.tasklistitems)
     _logger.info(import_sep)
 
     # import bundle
