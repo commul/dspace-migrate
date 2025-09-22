@@ -59,6 +59,11 @@ clarin-dspace.sql  clarin-utilities.sql
       cat input/dump/clarin-utilities.sql | docker compose -p d7ws exec -T dspacedb psql -p 5430 --username=dspace clarin-utilities
       cat input/dump/clarin-dspace.sql | docker compose -p d7ws exec -T dspacedbpsql -p 5430 --username=dspace clarin-dspace
       ```
+***
+- install dependencies for this project (ideally in a python venv)
+  ```
+  pip install -r requirements.txt
+  ```
 
 ***
 - update `project_settings.py` with the db connection and admin user details
