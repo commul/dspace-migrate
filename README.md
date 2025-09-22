@@ -33,8 +33,14 @@ because we use this endpoint for importing existing data.
 ### Prepare `dspace-python-api` project for migration
 
 - copy the files used during migration into `input/` directory:
+```sh
+curl -LJO https://github.com/ufal/clarin-dspace/archive/refs/tags/2023.01.zip &&\
+unzip -j clarin-dspace-2023.01.zip clarin-dspace-2023.01/dspace-xmlui/src/main/webapp/themes/UFAL/images/licenses/* -d input/icon &&\
+rm clarin-dspace-2023.01.zip
 ```
-> ls -R ./input
+```sh
+:~$ ls -R ./input
+
 input:
 dump  icon
 
@@ -44,11 +50,9 @@ clarin-dspace.sql  clarin-utilities.sql
 input/icon:
 aca.png  by.png  gplv2.png  mit.png    ...
 ```
-- Create CLARIN-DSpace5.* databases (dspace, utilities) from dump.
-  
-Either:
-- run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database. 
-- do the import manually
+- Create CLARIN-DSpace5.* databases (dspace, utilities) from dump. Either:
+  - run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database. 
+  - do the import manually
 
 ***
 - update `project_settings.py` with the db connection and admin user details
