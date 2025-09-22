@@ -91,7 +91,18 @@ e.g.,`handle.additional.prefixes = 11858, 11234, 11372, 11346, 20.500.12801, 20.
 - **NOTE:** database must be up to date (`dspace database migrate force` must be called in the `dspace/bin`)
 - **NOTE:** dspace server must be running
 - run command `cd ./src && python repo_import.py`
-- check the logs by default in `__logs`
+- check the logs (by default) in `__logs` and especially when you see 500 errors check also the dspace.log (on backend in /dspace/log/dspace.log)
+- if you need to rerun the migration you simply drop (including the volumes) the compose project (or just the database as suggested in https://github.com/ufal/dspace-migrate/issues/4#issuecomment-3044358816) and recreate the admin account etc. Also consider wiping the migration logs and temp files.
+  ```sh
+  docker compose -p d7ws down --volumes
+  docker compose --env-file .env -p d7ws -f docker/docker-compose.yml -f docker/docker-compose-rest.yml up -d
+  docker compose --env-file .env -p d7ws -f docker/docker-compose.yml -f docker/docker-compose-rest.yml -f docker/cli.yml run --rm dspace-cli create-administrator -e test@test.edu -f Sys -l Admin -p password -c en -o UFAL
+  docker compose -p d7ws exec dspace bash -c "mkdir -p /tmp/asset && pushd /tmp/asset && curl -LJO https://github.com/user-attachments/files/21145749/57024294293009067626820405177604023574.zip && mkdir -p /dspace/assetstore/57/02/42 && zcat 570242* > /dspace/assetstore/57/02/42/57024294293009067626820405177604023574 && popd && rm -rf /tmp/asset"
+  ```
+  ```sh
+  rm -rf __logs/ src/__temp/ input/tempdbexport_v*
+  ```
+  
 
 ## !!!Migration notes:!!!
 - The values of table attributes that describe the last modification time of dspace object (for example attribute `last_modified` in table `Item`) have a value that represents the time when that object was migrated and not the value from migrated database dump.
