@@ -78,8 +78,11 @@ clarin-dspace.sql  clarin-utilities.sql
     you can use the `licenses` hash to do an automatic udpate of the urls 
 
 ***
-- Make sure, your backend configuration (`dspace.cfg`) includes all handle prefixes from generated handle json in property `handle.additional.prefixes`, 
-e.g.,`handle.additional.prefixes = 11858, 11234, 11372, 11346, 20.500.12801, 20.500.12800`
+- Make sure, your backend configuration (`local.cfg`) includes all handle prefixes, that you use, in the `handle.additional.prefixes` property, 
+e.g.,`handle.additional.prefixes = 11858, 11234, 11372, 11346, 20.500.12801, 20.500.12800`. Get them from the old database:
+  ```
+  clarin-dspace=# select distinct(split_part(handle, '/', 1)) as prefix from handle;
+  ```
 
 - Copy `assetstore` from dspace5 to dspace7 (for bitstream import). `assetstore` is in the folder where you have installed DSpace `dspace/assetstore`.
 
