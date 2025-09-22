@@ -9,6 +9,13 @@ are sending emails to the input email addresses.
 For example, when using the endpoint for creating new registration data, 
 there exists automatic function that sends email, what we don't want
 because we use this endpoint for importing existing data.
+```sh
+grep mail.server.disabled local.cfg
+mail.server.disabled=true
+
+docker compose -p d7ws exec dspace /dspace/bin/dspace dsprop -p mail.server.disabled
+true
+```
 
 ### Prerequisites:
 1. Install CLARIN-DSpace7.*. (postgres, solr, dspace backend) - you can use `docker compose`. At this point keep your `local.cfg` minimal, you'll modify it when the migration is done.
