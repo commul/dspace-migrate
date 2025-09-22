@@ -32,19 +32,16 @@ because we use this endpoint for importing existing data.
 ***
 ### Prepare `dspace-python-api` project for migration
 
-- copy the files used during migration into `input/` directory:
 
 ```sh
 :~$ ls -R ./input
 
 input:
-dump  icon
+dump
 
 input/dump:
 clarin-dspace.sql  clarin-utilities.sql
 
-input/icon:
-aca.png  by.png  gplv2.png  mit.png    ...
 ```
 - Create CLARIN-DSpace5.* databases (dspace, utilities) from dump. Either:
   - run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database. 
