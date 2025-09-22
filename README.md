@@ -46,6 +46,12 @@ clarin-dspace.sql  clarin-utilities.sql
 - Create CLARIN-DSpace5.* databases (dspace, utilities) from dump. Either:
   - run `scripts/start.local.dspace.db.bat` or use `scipts/init.dspacedb5.sh` directly with your database. 
   - do the import manually
+     ```
+      docker compose -p d7ws exec dspacedb createdb -p 5430 --username=dspace --owner=dspace --encoding=UNICODE clarin-dspace
+      docker compose -p d7ws exec dspacedb createdb -p 5430 --username=dspace --owner=dspace --encoding=UNICODE clarin-utilities
+      cat input/dump/clarin-utilities.sql | docker compose -p d7ws exec -T dspacedb psql -p 5430 --username=dspace clarin-utilities
+      cat input/dump/clarin-dspace.sql | docker compose -p d7ws exec -T dspacedbpsql -p 5430 --username=dspace clarin-dspace
+      ```
 
 ***
 - update `project_settings.py` with the db connection and admin user details
