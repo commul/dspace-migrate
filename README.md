@@ -67,6 +67,15 @@ clarin-dspace.sql  clarin-utilities.sql
 
 ***
 - update `project_settings.py` with the db connection and admin user details
+  - You can use an internal backend IP
+  - With `"testing": True` the mechanism described in https://github.com/ufal/dspace-migrate/issues/4#issuecomment-3052818633 should kick in (if you also have the mentioned file)
+    ```
+    docker compose -p d7ws exec dspace bash -c "mkdir -p /tmp/asset && pushd /tmp/asset && curl -LJO https://github.com/user-attachments/files/21145749/57024294293009067626820405177604023574.zip && mkdir -p /dspace/assetstore/57/02/42 && zcat 570242* > /dspace/assetstore/57/02/42/57024294293009067626820405177604023574 && popd && rm -rf /tmp/asset"
+    ```
+    You don't want this in the final migration
+  - Think about the `ignore` section, usually you don't want to ignore eperson `198` (but you might have other that you won't be migrating)
+  - If you were using many custom licenses and their text was under `xmlui/page`
+    you can use the `licenses` hash to do an automatic udpate of the urls 
 
 ***
 - Make sure, your backend configuration (`dspace.cfg`) includes all handle prefixes from generated handle json in property `handle.additional.prefixes`, 
