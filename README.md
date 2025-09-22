@@ -84,7 +84,7 @@ e.g.,`handle.additional.prefixes = 11858, 11234, 11372, 11346, 20.500.12801, 20.
   clarin-dspace=# select distinct(split_part(handle, '/', 1)) as prefix from handle;
   ```
 
-- Copy `assetstore` from dspace5 to dspace7 (for bitstream import). `assetstore` is in the folder where you have installed DSpace `dspace/assetstore`.
+- This project only migrates the data stored in the database(s) not the actual files. Copy `assetstore` from dspace5 to dspace7 (for bitstream import). `assetstore` is in the folder where you have installed DSpace `dspace/assetstore`.
 
 ***
 ### Run the migration
